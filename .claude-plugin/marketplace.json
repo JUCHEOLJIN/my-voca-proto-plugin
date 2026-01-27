@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "marketplace": {
+    "name": "My Voca Plugin Marketplace",
+    "description": "영어 단어 학습 플러그인"
+  },
+  "plugins": [
+    {
+      "name": "my-voca",
+      "source": "./",
+      "description": "영어 단어 학습 비서 - 단어 수집, 퀴즈, 학습 현황 추적",
+      "version": "1.0.0",
+      "author": {
+        "name": "JUCHEOLJIN"
+      },
+      "repository": "https://github.com/JUCHEOLJIN/my-voca-proto-plugin",
+      "keywords": ["english", "vocabulary", "learning", "quiz", "education"]
+    }
+  ]
+}

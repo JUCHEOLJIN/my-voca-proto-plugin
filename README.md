@@ -4,12 +4,20 @@ Claude Code 플러그인으로 영어 단어를 학습하세요.
 
 ## Installation
 
-```bash
-# 로컬 테스트
-claude --plugin-dir /path/to/my-voca-proto-plugin
+### 마켓플레이스에서 설치 (권장)
 
-# 또는 플러그인 설치
-claude plugin install my-voca
+```bash
+# 1. 마켓플레이스 추가
+/plugin marketplace add JUCHEOLJIN/my-voca-proto-plugin
+
+# 2. 플러그인 설치
+/plugin install my-voca
+```
+
+### 로컬 테스트
+
+```bash
+claude --plugin-dir /path/to/my-voca-plugin
 ```
 
 ## Commands
