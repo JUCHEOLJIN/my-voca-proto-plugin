@@ -1,0 +1,9 @@
+{
+  "name": "my-voca",
+  "version": "1.0.0",
+  "description": "English vocabulary learning assistant - research words, take quizzes, and track progress",
+  "author": {
+    "name": "cheoljin"
+  },
+  "keywords": ["english", "vocabulary", "learning", "quiz", "education"]
+}
