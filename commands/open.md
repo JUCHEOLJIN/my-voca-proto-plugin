@@ -13,16 +13,25 @@ argument-hint: [dashboard|quiz|cards] - 열 화면 선택
    - `quiz`: 퀴즈 UI 열기
    - `cards`: 플래시카드 열기 (미구현 시 대시보드)
 
-2. **데이터 주입**:
+2. **플러그인 설치 경로 찾기** (중요!):
+   - Bash로 실행: `cat ~/.claude/plugins/installed_plugins.json | grep -A5 "my-voca@"`
+   - 결과에서 `installPath` 값 추출 (예: `/Users/.../.claude/plugins/cache/my-voca-marketplace/my-voca/1.0.0`)
+   - 이 경로를 `PLUGIN_ROOT`로 기억
+
+3. **템플릿 파일 읽기** (중요! 직접 HTML 생성하지 말 것!):
+   - `quiz` → Read 도구로 `{PLUGIN_ROOT}/templates/quiz.html` 파일 전체 읽기
+   - `dashboard` → Read 도구로 `{PLUGIN_ROOT}/templates/dashboard.html` 파일 전체 읽기
+   - **절대로 HTML을 직접 작성하지 말고, 템플릿 파일을 그대로 복사할 것!**
+
+4. **데이터 주입**:
    - `data/vocabulary.json` 읽기
-   - HTML 템플릿에 데이터 주입
+   - 템플릿 HTML의 `<script>` 태그 바로 앞에 데이터 스크립트 삽입
 
-3. **HTML 생성**:
-   - `templates/` 폴더의 해당 HTML 템플릿 읽기
-   - `window.VOCA_DATA = [vocabulary.json 데이터]` 스크립트 추가
-   - 임시 HTML 파일 생성: `data/temp_[type].html`
+5. **임시 파일 생성**:
+   - 데이터가 주입된 HTML을 `data/temp_[type].html`에 Write
+   - 템플릿의 모든 내용(스타일, 스크립트, 버튼 등)이 그대로 유지되어야 함!
 
-4. **브라우저 열기**:
+6. **브라우저 열기**:
    - macOS: `open data/temp_[type].html`
    - Windows: `start data/temp_[type].html`
    - Linux: `xdg-open data/temp_[type].html`
@@ -50,3 +59,9 @@ window.VOCA_DATA = {
 
 팁: 퀴즈를 풀려면 `/open quiz`를 실행하세요.
 ```
+
+## 주의사항
+- **절대로** HTML을 직접 생성하지 말 것
+- **반드시** templates/ 폴더의 파일을 Read로 읽어서 사용
+- 템플릿에는 이미 완성된 UI(버튼, 스타일, 기능)가 있음
+- 데이터 주입만 하고 나머지는 그대로 유지
