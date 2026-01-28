@@ -701,8 +701,8 @@
       if (e.key === 'Enter') checkInputAnswer();
     });
 
-    // 퀴즈 완료 - sync 파일 자동 다운로드
-    function completeQuiz() {
+    // 퀴즈 완료 - 서버로 동기화 (실패 시 다운로드 폴백)
+    async function completeQuiz() {
       if (quizResults.length === 0) {
         alert('퀴즈 결과가 없습니다.');
         return;
@@ -710,7 +710,7 @@
 
       const today = new Date().toISOString().split('T')[0];
 
-      // sync 데이터 생성 (변경된 부분만)
+      // sync 데이터 생성
       const syncData = {
         syncedAt: new Date().toISOString(),
         results: quizResults.map(r => ({
@@ -720,7 +720,28 @@
         }))
       };
 
-      // 자동 다운로드 (대화상자 없음)
+      // 서버로 동기화 시도
+      try {
+        const response = await fetch('http://localhost:9876/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(syncData)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          showSyncSuccess(`자동 동기화 완료! (정답: ${result.correctCount}, 오답: ${result.wrongCount})`);
+        } else {
+          throw new Error('서버 응답 오류');
+        }
+      } catch (error) {
+        console.log('서버 동기화 실패, 다운로드 폴백:', error.message);
+        downloadFallback(syncData);
+      }
+    }
+
+    // 다운로드 폴백 (서버 연결 실패 시)
+    function downloadFallback(syncData) {
       const blob = new Blob([JSON.stringify(syncData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -731,11 +752,21 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      // 완료 메시지 표시
+      showSyncSuccess('결과 파일이 다운로드되었습니다. /sync 명령으로 동기화하세요.', true);
+    }
+
+    // 동기화 성공 메시지 표시
+    function showSyncSuccess(message, isManual = false) {
       const resultCard = document.querySelector('#resultScreen .quiz-card');
+
+      // 기존 메시지 제거
+      const existingMsg = resultCard.querySelector('.sync-msg');
+      if (existingMsg) existingMsg.remove();
+
       const syncMsg = document.createElement('p');
-      syncMsg.style.cssText = 'margin-top: 20px; color: #00ff88; font-size: 0.9em;';
-      syncMsg.textContent = '✓ 결과가 저장되었습니다.';
+      syncMsg.className = 'sync-msg';
+      syncMsg.style.cssText = `margin-top: 20px; color: ${isManual ? '#ffa500' : '#00ff88'}; font-size: 0.9em;`;
+      syncMsg.textContent = (isManual ? '⚠ ' : '✓ ') + message;
       resultCard.appendChild(syncMsg);
 
       // 버튼 비활성화

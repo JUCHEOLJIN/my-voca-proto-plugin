@@ -31,7 +31,12 @@ argument-hint: [dashboard|quiz|cards] - 열 화면 선택
    - 데이터가 주입된 HTML을 `data/temp_[type].html`에 Write
    - 템플릿의 모든 내용(스타일, 스크립트, 버튼 등)이 그대로 유지되어야 함!
 
-6. **브라우저 열기**:
+6. **퀴즈인 경우 동기화 서버 시작** (quiz일 때만):
+   - Bash로 백그라운드 실행: `node {PLUGIN_ROOT}/scripts/sync-server.js {DATA_PATH}/vocabulary.json &`
+   - `{DATA_PATH}`는 `data` 폴더의 절대 경로
+   - 서버가 시작되면 "Voca Sync 서버 시작" 메시지 확인
+
+7. **브라우저 열기**:
    - macOS: `open data/temp_[type].html`
    - Windows: `start data/temp_[type].html`
    - Linux: `xdg-open data/temp_[type].html`
