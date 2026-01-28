@@ -1,10 +1,22 @@
 ---
 description: 영어 단어 퀴즈 시작
-allowed-tools: Read, Write, AskUserQuestion
+allowed-tools: Read, Write, Bash, AskUserQuestion
 argument-hint: [유형] [개수] - 유형: fill-blank, ox, meaning, spelling, choice
 ---
 
 퀴즈 시작: $ARGUMENTS
+
+## 자동 동기화 (먼저 실행!)
+
+퀴즈 시작 전 브라우저 퀴즈 결과가 있는지 확인:
+
+1. `~/Downloads/voca_sync.json` 파일이 있는지 Bash로 확인
+2. 있으면:
+   - 파일 읽기
+   - `data/vocabulary.json`에 결과 반영 (correctCount/wrongCount 업데이트)
+   - sync 파일 삭제
+   - "브라우저 퀴즈 결과 동기화: 정답 +N, 오답 +N" 출력
+3. 없으면: 조용히 넘어가기
 
 ## 중요 규칙 - 먼저 읽을 것
 - 사용자가 답하기 전에 절대 정답을 보여주지 말 것 (객관식의 보기 제외)

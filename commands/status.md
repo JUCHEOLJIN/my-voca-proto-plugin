@@ -1,10 +1,22 @@
 ---
 description: 단어 학습 현황 및 통계 표시
-allowed-tools: Read
+allowed-tools: Read, Write, Bash
 argument-hint: [weak|today] - 선택적 필터
 ---
 
 학습 현황 표시: $ARGUMENTS
+
+## 자동 동기화 (먼저 실행!)
+
+현황 표시 전 브라우저 퀴즈 결과가 있는지 확인:
+
+1. `~/Downloads/voca_sync.json` 파일이 있는지 Bash로 확인
+2. 있으면:
+   - 파일 읽기
+   - `data/vocabulary.json`에 결과 반영 (correctCount/wrongCount 업데이트)
+   - sync 파일 삭제
+   - "브라우저 퀴즈 결과 동기화: 정답 +N, 오답 +N" 출력
+3. 없으면: 조용히 넘어가기
 
 ## 수행 지침
 

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Voca - 퀴즈</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 1.8em;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      margin: 0 15px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      transition: width 0.3s;
+    }
+
+    .quiz-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .question-type {
+      display: inline-block;
+      padding: 5px 15px;
+      background: rgba(0,212,255,0.2);
+      border-radius: 20px;
+      font-size: 0.9em;
+      color: #00d4ff;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      font-size: 2em;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .question-sub {
+      color: #888;
+      margin-bottom: 30px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      padding: 18px 25px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #eee;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .option-btn:hover {
+      background: rgba(0,212,255,0.1);
+      border-color: #00d4ff;
+      transform: translateX(5px);
+    }
+
+    .option-btn.correct {
+      background: rgba(0,255,136,0.2);
+      border-color: #00ff88;
+    }
+
+    .option-btn.wrong {
+      background: rgba(255,71,87,0.2);
+      border-color: #ff4757;
+    }
+
+    .option-btn.disabled {
+      pointer-events: none;
+    }
+
+    .input-answer {
+      width: 100%;
+      padding: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.2em;
+      text-align: center;
+      outline: none;
+    }
+
+    .input-answer:focus {
+      border-color: #00d4ff;
+    }
+
+    .submit-btn {
+      margin-top: 20px;
+      padding: 15px 50px;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0,212,255,0.3);
+    }
+
+    .feedback {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .feedback.correct {
+      display: block;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid #00ff88;
+    }
+
+    .feedback.wrong {
+      display: block;
+      background: rgba(255,71,87,0.1);
+      border: 1px solid #ff4757;
+    }
+
+    .feedback h3 {
+      margin-bottom: 10px;
+    }
+
+    .feedback .example {
+      color: #888;
+      font-style: italic;
+      margin-top: 10px;
+    }
+
+    .next-btn {
+      margin-top: 20px;
+      padding: 12px 40px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    .next-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* 결과 화면 */
+    .result-screen {
+      display: none;
+      text-align: center;
+    }
+
+    .result-screen.active {
+      display: block;
+    }
+
+    .result-score {
+      font-size: 5em;
+      font-weight: bold;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+    }
+
+    .result-message {
+      font-size: 1.5em;
+      margin-bottom: 30px;
+    }
+
+    .result-details {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .result-stat {
+      text-align: center;
+    }
+
+    .result-stat .num {
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .result-stat .num.correct { color: #00ff88; }
+    .result-stat .num.wrong { color: #ff4757; }
+
+    .restart-btn {
+      padding: 15px 50px;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1.1em;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .home-btn {
+      padding: 15px 50px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1.1em;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* 시작 화면 */
+    .start-screen {
+      text-align: center;
+    }
+
+    .start-screen h2 {
+      font-size: 1.5em;
+      margin-bottom: 30px;
+    }
+
+    .quiz-type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .quiz-type-btn {
+      padding: 25px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 15px;
+      color: #eee;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quiz-type-btn:hover, .quiz-type-btn.selected {
+      border-color: #00d4ff;
+      background: rgba(0,212,255,0.1);
+    }
+
+    .quiz-type-btn h3 {
+      margin-bottom: 8px;
+    }
+
+    .quiz-type-btn p {
+      font-size: 0.85em;
+      color: #888;
+    }
+
+    .count-selector {
+      margin-bottom: 30px;
+    }
+
+    .count-selector label {
+      display: block;
+      margin-bottom: 10px;
+      color: #888;
+    }
+
+    .count-btns {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .count-btn {
+      padding: 10px 25px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #eee;
+      cursor: pointer;
+    }
+
+    .count-btn.selected {
+      border-color: #00d4ff;
+      background: rgba(0,212,255,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <header>
+      <h1>MY VOCA QUIZ</h1>
+    </header>
+
+    <!-- 시작 화면 -->
+    <div id="startScreen" class="start-screen">
+      <div class="quiz-card">
+        <h2>퀴즈 유형 선택</h2>
+
+        <div class="quiz-type-grid">
+          <div class="quiz-type-btn selected" data-type="choice">
+            <h3>객관식</h3>
+            <p>4개 보기 중 선택</p>
+          </div>
+          <div class="quiz-type-btn" data-type="meaning">
+            <h3>뜻 쓰기</h3>
+            <p>영어 → 한국어</p>
+          </div>
+          <div class="quiz-type-btn" data-type="spelling">
+            <h3>단어 쓰기</h3>
+            <p>한국어 → 영어</p>
+          </div>
+          <div class="quiz-type-btn" data-type="ox">
+            <h3>OX 퀴즈</h3>
+            <p>맞으면 O, 틀리면 X</p>
+          </div>
+        </div>
+
+        <div class="count-selector">
+          <label>문제 수</label>
+          <div class="count-btns">
+            <button class="count-btn" data-count="5">5문제</button>
+            <button class="count-btn selected" data-count="10">10문제</button>
+            <button class="count-btn" data-count="20">20문제</button>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="startQuiz()">시작하기</button>
+      </div>
+    </div>
+
+    <!-- 퀴즈 화면 -->
+    <div id="quizScreen" style="display: none;">
+      <div class="progress-info">
+        <span id="currentNum">1</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+        </div>
+        <span id="totalNum">10</span>
+      </div>
+
+      <div class="quiz-card">
+        <div class="question-type" id="questionType">객관식</div>
+        <div class="question" id="questionWord">ambition</div>
+        <div class="question-sub" id="questionSub">이 단어의 뜻은?</div>
+
+        <div id="optionsContainer" class="options">
+          <!-- 동적으로 생성 -->
+        </div>
+
+        <div id="inputContainer" style="display: none;">
+          <input type="text" class="input-answer" id="answerInput" placeholder="답을 입력하세요">
+          <button class="submit-btn" onclick="checkInputAnswer()">확인</button>
+        </div>
+
+        <div class="feedback" id="feedback">
+          <h3 id="feedbackTitle">정답입니다!</h3>
+          <p id="feedbackAnswer"></p>
+          <p class="example" id="feedbackExample"></p>
+          <button class="next-btn" onclick="nextQuestion()">다음 문제</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="resultScreen" class="result-screen">
+      <div class="quiz-card">
+        <h2>퀴즈 완료!</h2>
+        <div class="result-score" id="resultScore">80%</div>
+        <div class="result-message" id="resultMessage">잘 하셨습니다!</div>
+
+        <div class="result-details">
+          <div class="result-stat">
+            <div class="num correct" id="correctCount">8</div>
+            <div>정답</div>
+          </div>
+          <div class="result-stat">
+            <div class="num wrong" id="wrongCount">2</div>
+            <div>오답</div>
+          </div>
+        </div>
+
+        <button class="restart-btn" onclick="completeQuiz()">완료</button>
+        <button class="home-btn" onclick="restartQuiz()">다시 하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DATA 변수는 플러그인에서 주입됨
+    const DATA = window.VOCA_DATA || {
+      words: [
+        { word: "ambition", meaning: "야망, 포부 (n.)", example: { en: "She has a strong ambition.", ko: "그녀는 강한 야망이 있다." }},
+        { word: "accomplish", meaning: "성취하다 (v.)", example: { en: "He accomplished his goal.", ko: "그는 목표를 성취했다." }},
+        { word: "adequate", meaning: "충분한 (adj.)", example: { en: "The budget was adequate.", ko: "예산은 충분했다." }},
+        { word: "elaborate", meaning: "정교한 (adj.)", example: { en: "An elaborate design.", ko: "정교한 디자인." }}
+      ]
+    };
+
+    let quizType = 'choice';
+    let questionCount = 10;
+    let currentIndex = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    let quizWords = [];
+    let currentWord = null;
+    let answered = false;
+
+    // 퀴즈 유형 선택
+    document.querySelectorAll('.quiz-type-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.quiz-type-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        quizType = btn.dataset.type;
+      });
+    });
+
+    // 문제 수 선택
+    document.querySelectorAll('.count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        questionCount = parseInt(btn.dataset.count);
+      });
+    });
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+      quizWords = shuffle([...DATA.words]).slice(0, Math.min(questionCount, DATA.words.length));
+      currentIndex = 0;
+      correctAnswers = 0;
+      wrongAnswers = 0;
+
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('quizScreen').style.display = 'block';
+      document.getElementById('resultScreen').classList.remove('active');
+
+      document.getElementById('totalNum').textContent = quizWords.length;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      answered = false;
+      currentWord = quizWords[currentIndex];
+
+      document.getElementById('currentNum').textContent = currentIndex + 1;
+      document.getElementById('progressFill').style.width = ((currentIndex + 1) / quizWords.length * 100) + '%';
+      document.getElementById('feedback').className = 'feedback';
+
+      const optionsContainer = document.getElementById('optionsContainer');
+      const inputContainer = document.getElementById('inputContainer');
+
+      if (quizType === 'choice') {
+        document.getElementById('questionType').textContent = '객관식';
+        document.getElementById('questionWord').textContent = currentWord.word;
+        document.getElementById('questionSub').textContent = '이 단어의 뜻은?';
+
+        optionsContainer.style.display = 'flex';
+        inputContainer.style.display = 'none';
+
+        // 오답 보기 생성
+        const otherWords = DATA.words.filter(w => w.word !== currentWord.word);
+        const wrongOptions = shuffle(otherWords).slice(0, 3).map(w => w.meaning);
+        const options = shuffle([currentWord.meaning, ...wrongOptions]);
+
+        optionsContainer.innerHTML = options.map((opt, i) =>
+          `<button class="option-btn" onclick="checkAnswer(this, '${opt.replace(/'/g, "\\'")}')">${i + 1}. ${opt}</button>`
+        ).join('');
+
+      } else if (quizType === 'meaning') {
+        document.getElementById('questionType').textContent = '뜻 쓰기';
+        document.getElementById('questionWord').textContent = currentWord.word;
+        document.getElementById('questionSub').textContent = '이 단어의 한국어 뜻을 쓰세요';
+
+        optionsContainer.style.display = 'none';
+        inputContainer.style.display = 'block';
+        document.getElementById('answerInput').value = '';
+        document.getElementById('answerInput').focus();
+
+      } else if (quizType === 'spelling') {
+        document.getElementById('questionType').textContent = '단어 쓰기';
+        document.getElementById('questionWord').textContent = currentWord.meaning;
+        document.getElementById('questionSub').textContent = '이 뜻의 영어 단어를 쓰세요';
+
+        optionsContainer.style.display = 'none';
+        inputContainer.style.display = 'block';
+        document.getElementById('answerInput').value = '';
+        document.getElementById('answerInput').focus();
+
+      } else if (quizType === 'ox') {
+        document.getElementById('questionType').textContent = 'OX 퀴즈';
+
+        // 50% 확률로 맞는/틀린 뜻 표시
+        const isCorrect = Math.random() > 0.5;
+        let displayMeaning;
+
+        if (isCorrect) {
+          displayMeaning = currentWord.meaning;
+        } else {
+          const others = DATA.words.filter(w => w.word !== currentWord.word);
+          displayMeaning = others[Math.floor(Math.random() * others.length)]?.meaning || currentWord.meaning;
+        }
+
+        document.getElementById('questionWord').textContent = `${currentWord.word} = ${displayMeaning}`;
+        document.getElementById('questionSub').textContent = '맞으면 O, 틀리면 X';
+
+        optionsContainer.style.display = 'flex';
+        inputContainer.style.display = 'none';
+
+        currentWord._oxCorrect = isCorrect ? 'O' : 'X';
+
+        optionsContainer.innerHTML = `
+          <button class="option-btn" onclick="checkOX(this, 'O')">O - 맞다</button>
+          <button class="option-btn" onclick="checkOX(this, 'X')">X - 틀리다</button>
+        `;
+      }
+    }
+
+    function checkAnswer(btn, selected) {
+      if (answered) return;
+      answered = true;
+
+      const isCorrect = selected === currentWord.meaning;
+      document.querySelectorAll('.option-btn').forEach(b => {
+        b.classList.add('disabled');
+        if (b.textContent.includes(currentWord.meaning)) {
+          b.classList.add('correct');
+        }
+      });
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        showFeedback(true);
+      } else {
+        btn.classList.add('wrong');
+        showFeedback(false);
+      }
+    }
+
+    function checkOX(btn, selected) {
+      if (answered) return;
+      answered = true;
+
+      const isCorrect = selected === currentWord._oxCorrect;
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+
+      if (isCorrect) {
+        btn.classList.add('correct');
+        showFeedback(true);
+      } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('.option-btn').forEach(b => {
+          if (b.textContent.includes(currentWord._oxCorrect)) b.classList.add('correct');
+        });
+        showFeedback(false);
+      }
+    }
+
+    function checkInputAnswer() {
+      if (answered) return;
+      answered = true;
+
+      const input = document.getElementById('answerInput').value.trim().toLowerCase();
+      let isCorrect = false;
+
+      if (quizType === 'meaning') {
+        // 뜻에서 핵심 단어만 추출해서 비교
+        const meaningWords = currentWord.meaning.replace(/\(.*?\)/g, '').split(/[,\s]+/).map(w => w.trim().toLowerCase());
+        isCorrect = meaningWords.some(w => input.includes(w) || w.includes(input));
+      } else if (quizType === 'spelling') {
+        isCorrect = input === currentWord.word.toLowerCase();
+      }
+
+      showFeedback(isCorrect);
+    }
+
+    // 퀴즈 결과 기록용
+    const quizResults = [];
+
+    function showFeedback(isCorrect) {
+      const feedback = document.getElementById('feedback');
+
+      // 결과 기록
+      quizResults.push({
+        word: currentWord.word,
+        correct: isCorrect
+      });
+
+      if (isCorrect) {
+        correctAnswers++;
+        feedback.className = 'feedback correct';
+        document.getElementById('feedbackTitle').textContent = '정답입니다! 🎉';
+      } else {
+        wrongAnswers++;
+        feedback.className = 'feedback wrong';
+        document.getElementById('feedbackTitle').textContent = '오답입니다 😢';
+      }
+
+      document.getElementById('feedbackAnswer').textContent = `${currentWord.word} = ${currentWord.meaning}`;
+      document.getElementById('feedbackExample').textContent =
+        currentWord.example ? `"${currentWord.example.en}" - ${currentWord.example.ko}` : '';
+
+      if (currentIndex >= quizWords.length - 1) {
+        document.querySelector('.next-btn').textContent = '결과 보기';
+      }
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex >= quizWords.length) {
+        showResult();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showResult() {
+      document.getElementById('quizScreen').style.display = 'none';
+      document.getElementById('resultScreen').classList.add('active');
+
+      const score = Math.round((correctAnswers / quizWords.length) * 100);
+      document.getElementById('resultScore').textContent = score + '%';
+      document.getElementById('correctCount').textContent = correctAnswers;
+      document.getElementById('wrongCount').textContent = wrongAnswers;
+
+      let message = '';
+      if (score >= 90) message = '완벽합니다! 🏆';
+      else if (score >= 70) message = '잘 하셨습니다! 👏';
+      else if (score >= 50) message = '조금 더 연습해보세요 💪';
+      else message = '복습이 필요합니다 📚';
+
+      document.getElementById('resultMessage').textContent = message;
+    }
+
+    function restartQuiz() {
+      document.getElementById('resultScreen').classList.remove('active');
+      document.getElementById('startScreen').style.display = 'block';
+    }
+
+    // Enter 키로 제출
+    document.getElementById('answerInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkInputAnswer();
+    });
+
+    // 퀴즈 완료 - sync 파일 자동 다운로드
+    function completeQuiz() {
+      if (quizResults.length === 0) {
+        alert('퀴즈 결과가 없습니다.');
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // sync 데이터 생성 (변경된 부분만)
+      const syncData = {
+        syncedAt: new Date().toISOString(),
+        results: quizResults.map(r => ({
+          word: r.word,
+          correct: r.correct,
+          reviewedAt: today
+        }))
+      };
+
+      // 자동 다운로드 (대화상자 없음)
+      const blob = new Blob([JSON.stringify(syncData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'voca_sync.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // 완료 메시지 표시
+      const resultCard = document.querySelector('#resultScreen .quiz-card');
+      const syncMsg = document.createElement('p');
+      syncMsg.style.cssText = 'margin-top: 20px; color: #00ff88; font-size: 0.9em;';
+      syncMsg.textContent = '✓ 결과가 저장되었습니다.';
+      resultCard.appendChild(syncMsg);
+
+      // 버튼 비활성화
+      document.querySelector('.restart-btn').disabled = true;
+      document.querySelector('.restart-btn').style.opacity = '0.5';
+      document.querySelector('.restart-btn').textContent = '저장됨';
+    }
+  </script>
+</body>
+</html>
